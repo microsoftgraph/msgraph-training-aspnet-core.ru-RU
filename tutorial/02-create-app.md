@@ -1,83 +1,81 @@
 ---
-ms.openlocfilehash: 308938efbedc4618c7b0ca3ea6b2eebc0582da10
-ms.sourcegitcommit: 9d0d10a9e8e5a1d80382d89bc412df287bee03f3
+ms.openlocfilehash: 5b1a776c28b6f9218c713dde68f45e571ebfd999
+ms.sourcegitcommit: 6341ad07cd5b03269e7fd20cd3212e48baee7c07
 ms.translationtype: MT
 ms.contentlocale: ru-RU
-ms.lasthandoff: 10/30/2020
-ms.locfileid: "48822485"
+ms.lasthandoff: 01/23/2021
+ms.locfileid: "49942157"
 ---
 <!-- markdownlint-disable MD002 MD041 -->
 
-Начните с создания базового веб-приложения ASP.NET.
+Для начала создайте ASP.NET Core web app.
 
-1. Откройте интерфейс командной строки (CLI) в каталоге, в котором нужно создать проект. Выполните следующую команду.
+1. Откройте интерфейс командной строки (CLI) в каталоге, где нужно создать проект. Выполните следующую команду.
 
     ```Shell
     dotnet new mvc -o GraphTutorial
     ```
 
-1. После создания проекта убедитесь, что он работает, изменив текущий каталог на каталог **графтуториал** и выполнив следующую команду в командной системе CLI.
+1. После создания проекта убедитесь, что он работает, изменив текущий каталог на **каталог GraphTutorial** и выполнив следующую команду в CLI.
 
     ```Shell
     dotnet run
     ```
 
-1. Откройте браузер и перейдите по адресу `https://localhost:5001` . Если все работает, вы должны увидеть основную страницу ASP.NET по умолчанию.
+1. Откройте браузер и перейдите к `https://localhost:5001` . Если все работает, вы увидите стандартную ASP.NET основной странице.
 
 > [!IMPORTANT]
-> Если вы получаете предупреждение о том, что сертификат для **localhost** не является доверенным, вы можете установить и доверять сертификату разработки с помощью инфраструктуры .NET Core. Инструкции по работе с определенными операционными системами приведены [в разделе Применение HTTPS в ядре ASP.NET](/aspnet/core/security/enforcing-ssl?view=aspnetcore-3.1) .
+> Если вы получите предупреждение о том, что сертификат **для localhost** не является доверенным, можно использовать .NET Core CLI для установки сертификата разработки и доверия ему. Инструкции [по определенным операционным системам см.](/aspnet/core/security/enforcing-ssl?view=aspnetcore-5.0) в ASP.NET "Enforce HTTPS in ASP.NET Core".
 
 ## <a name="add-nuget-packages"></a>Добавление пакетов NuGet
 
-Прежде чем переходить, установите некоторые дополнительные пакеты NuGet, которые будут использоваться позже.
+Прежде чем двигаться дальше, установите некоторые дополнительные пакеты NuGet, которые вы будете использовать позже.
 
-- [Microsoft. Identity. Web](https://www.nuget.org/packages/Microsoft.Identity.Web/) для запроса и управления маркерами доступа.
-- [Microsoft. Identity. Web. MicrosoftGraph](https://www.nuget.org/packages/Microsoft.Identity.Web.MicrosoftGraph/) для добавления пакета SDK Microsoft Graph с помощью внедрения зависимостей.
-- [Microsoft. Identity. Web. UI](https://www.nuget.org/packages/Microsoft.Identity.Web.UI/) для входа в систему и для пользовательского интерфейса выхода.
-- [Microsoft. Graph](https://www.nuget.org/packages/Microsoft.Graph/) для совершения звонков в Microsoft Graph.
-- [Тимезонеконвертер](https://github.com/mj1856/TimeZoneConverter) для обработки многоплатформенных идентификаторов с часовым поясом.
+- [Microsoft.Identity.Web](https://www.nuget.org/packages/Microsoft.Identity.Web/) для запроса маркеров доступа и управления маркерами доступа.
+- [Microsoft.Identity.Web.MicrosoftGraph для](https://www.nuget.org/packages/Microsoft.Identity.Web.MicrosoftGraph/) добавления microsoft Graph SDK с помощью встраивания зависимостей.
+- [Microsoft.Identity.Web.UI](https://www.nuget.org/packages/Microsoft.Identity.Web.UI/) для пользовательского интерфейса для входов и выходов.
+- [TimeZoneConverter](https://github.com/mj1856/TimeZoneConverter) для обработки идентификаторов часового пояса на разных платформах.
 
-1. Выполните следующие команды в интерфейсе командной строки, чтобы установить зависимости.
+1. Для установки зависимостей в CLI запустите следующие команды.
 
     ```Shell
-    dotnet add package Microsoft.Identity.Web --version 1.1.0
-    dotnet add package Microsoft.Identity.MicrosoftGraph --version 1.1.0
-    dotnet add package Microsoft.Identity.Web.UI --version 1.1.0
-    dotnet add package Microsoft.Graph --version 3.18.0
+    dotnet add package Microsoft.Identity.Web --version 1.5.1
+    dotnet add package Microsoft.Identity.Web.MicrosoftGraph --version 1.5.1
+    dotnet add package Microsoft.Identity.Web.UI --version 1.5.1
     dotnet add package TimeZoneConverter
     ```
 
 ## <a name="design-the-app"></a>Проектирование приложения
 
-В этом разделе вы создадите базовую структуру пользовательского интерфейса приложения.
+В этом разделе вы создадим базовую структуру пользовательского интерфейса приложения.
 
 ### <a name="implement-alert-extension-methods"></a>Реализация методов расширения оповещений
 
-В этом разделе вы создадите методы расширения для типа, `IActionResult` возвращаемого представлениями контроллера. Это расширение позволит передавать в представление временные сообщения об ошибках или успешных попыток.
+В этом разделе мы создадим методы расширения для `IActionResult` типа, возвращаемого представлениями контроллера. Это расширение позволяет передать в представление временные сообщения об ошибках или успешном успешном переходе.
 
 > [!TIP]
-> Для редактирования исходных файлов в этом руководстве можно использовать любой текстовый редактор. Тем не менее, [Visual Studio Code](https://code.visualstudio.com/) предоставляет дополнительные функции, такие как отладка и IntelliSense.
+> Для редактирования исходных файлов для этого руководства можно использовать любой текстовый редактор. Однако Visual Studio [код](https://code.visualstudio.com/) предоставляет дополнительные функции, такие как отладка и Intellisense.
 
-1. Создайте новый каталог в каталоге **графтуториал** с именем **Alerts**.
+1. Создайте новый каталог в **каталоге GraphTutorial** с **именем Alerts.**
 
-1. Создайте новый файл с именем **WithAlertResult.CS** в каталоге **./алертс** и добавьте следующий код.
+1. Создайте файл с **именем WithAlertResult.cs** **в каталоге ./Alerts** и добавьте следующий код.
 
     :::code language="csharp" source="../demo/GraphTutorial/Alerts/WithAlertResult.cs" id="WithAlertResultSnippet":::
 
-1. Создайте новый файл с именем **AlertExtensions.CS** в каталоге **./алертс** и добавьте следующий код.
+1. Создайте файл с **именем AlertExtensions.cs** в **каталоге ./Alerts** и добавьте следующий код.
 
     :::code language="csharp" source="../demo/GraphTutorial/Alerts/AlertExtensions.cs" id="AlertExtensionsSnippet":::
 
 ### <a name="implement-user-data-extension-methods"></a>Реализация методов расширения пользовательских данных
 
-В этом разделе вы создадите методы расширения для объекта, `ClaimsPrincipal` созданного платформой удостоверений Майкрософт. Это позволит расширить существующую идентификацию пользователя с помощью данных из Microsoft Graph.
+В этом разделе мы создадим методы расширения для `ClaimsPrincipal` объекта, создающегося платформой Microsoft Identity. Это позволит расширить существующее удостоверение пользователя данными из Microsoft Graph.
 
 > [!NOTE]
-> Этот код — это просто заполнитель, который будет выполнен в более позднее время.
+> На данный момент этот код является просто заполнителям, он будет завершен в более позднем разделе.
 
-1. Создайте новый каталог в каталоге **графтуториал** с именем **Graph**.
+1. Создайте новый каталог в **каталоге GraphTutorial** с именем **Graph.**
 
-1. Создайте новый файл с именем **GraphClaimsPrincipalExtensions.CS** и добавьте следующий код.
+1. Создайте файл с **именем GraphClaimsPrincipalExtensions.cs** и добавьте следующий код.
 
     ```csharp
     using System.Security.Claims;
@@ -116,33 +114,33 @@ ms.locfileid: "48822485"
 
 ### <a name="create-views"></a>Создание представлений
 
-В этом разделе будет реализовано представление Razor для приложения.
+В этом разделе будут реализованы представления "Секция" для приложения.
 
-1. Добавьте новый файл с именем **_LoginPartial. cshtml** в каталоге **./виевс/Шаред** и добавьте приведенный ниже код.
+1. Добавьте новый файл с **именем _LoginPartial.cshtml** в **каталог ./Views/Shared** и добавьте следующий код.
 
     :::code language="cshtml" source="../demo/GraphTutorial/Views/Shared/_LoginPartial.cshtml" id="LoginPartialSnippet":::
 
-1. Добавьте новый файл с именем **_AlertPartial. cshtml** в каталоге **./виевс/Шаред** и добавьте приведенный ниже код.
+1. Добавьте новый файл с **именем _AlertPartial.cshtml** в **каталог ./Views/Shared** и добавьте следующий код.
 
     :::code language="cshtml" source="../demo/GraphTutorial/Views/Shared/_AlertPartial.cshtml" id="AlertPartialSnippet":::
 
-1. Откройте файл **./виевс/шаред/_layout. cshtml** и замените все его содержимое приведенным ниже кодом, чтобы обновить глобальную структуру приложения.
+1. Откройте **файл ./Views/Shared/_Layout.cshtml** и замените его все содержимое на следующий код, чтобы обновить глобальный макет приложения.
 
     :::code language="cshtml" source="../demo/GraphTutorial/Views/Shared/_Layout.cshtml" id="LayoutSnippet":::
 
-1. Откройте файл **./ввврут/КСС/Сите.КСС** и добавьте приведенный ниже код в конец файла.
+1. Откройте **файл ./wwwroot/css/site.css** и добавьте следующий код в нижней части файла.
 
     :::code language="css" source="../demo/GraphTutorial/wwwroot/css/site.css" id="CssSnippet":::
 
-1. Откройте файл **./виевс/Хоме/индекс.кштмл** и замените его содержимое на приведенный ниже код.
+1. Откройте файл **./Views/Home/index.cshtml** и замените его содержимое на следующее.
 
     :::code language="cshtml" source="../demo/GraphTutorial/Views/Home/Index.cshtml" id="HomeIndexSnippet":::
 
-1. Создайте новый каталог в каталоге **./ввврут** с именем **img**. Добавьте в этот каталог файл изображения с именем **no-profile-photo.png** . Это изображение будет использоваться в качестве фотографии пользователя, когда у пользователя нет фотографии в Microsoft Graph.
+1. Создайте новый каталог в **каталоге ./wwwroot** с именем **img.** Добавьте файл изображения с именем **no-profile-photo.png** в этом каталоге. Это изображение будет использоваться в качестве фотографии пользователя, если у пользователя нет фотографии в Microsoft Graph.
 
     > [!TIP]
-    > Вы можете скачать изображение, используемое на этих снимках экрана, из [GitHub](https://github.com/microsoftgraph/msgraph-training-aspnet-core/blob/master/demo/GraphTutorial/wwwroot/img/no-profile-photo.png).
+    > Вы можете скачать изображение, использованное на этих снимках экрана, с [GitHub.](https://github.com/microsoftgraph/msgraph-training-aspnet-core/blob/master/demo/GraphTutorial/wwwroot/img/no-profile-photo.png)
 
-1. Сохраните все изменения и перезапустите сервер ( `dotnet run` ). Теперь приложение должно выглядеть по-другому.
+1. Сохраните все изменения и перезапустите сервер ( `dotnet run` ). Теперь приложение должно выглядеть совершенно иначе.
 
-    ![Снимок экрана с переработанной домашней страницей](./images/create-app-01.png)
+    ![Снимок экрана с измененной домашней страницей](./images/create-app-01.png)
